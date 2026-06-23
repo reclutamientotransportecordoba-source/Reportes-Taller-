@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado de reportes — Transportes Córdoba</title>
+<style>
+  :root{
+    --dorado:#c0972d;
+    --dorado-claro:#e3c878;
+    --carbon:#3b454f;
+    --carbon-claro:#4d5963;
+    --fondo:#f4f2ec;
+    --blanco:#ffffff;
+    --texto:#2b3137;
+    --gris:#737d85;
+    --linea:#e0ddd3;
+    /* estados */
+    --recibido-bg:#e8edf1; --recibido-fg:#3b454f;
+    --proceso-bg:#fbf0d6;  --proceso-fg:#8a6a14;
+    --resuelto-bg:#dff0e3; --resuelto-fg:#2c6b3f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--fondo);
+    color:var(--texto);
+    line-height:1.5;
+    min-height:100vh;
+  }
+  .topbar{
+    background:var(--carbon);
+    color:var(--blanco);
+    padding:18px 20px;
+    display:flex;align-items:center;gap:14px;
+    border-bottom:4px solid var(--dorado);
+  }
+  .logo-mark{
+    width:42px;height:42px;border-radius:50%;
+    background:var(--dorado);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:22px;color:var(--carbon);
+    flex-shrink:0;
+    font-family:Georgia,serif;
+  }
+  .topbar h1{font-size:17px;font-weight:700;letter-spacing:.3px;line-height:1.2;}
+  .topbar span{display:block;font-size:11px;font-weight:500;color:var(--dorado-claro);letter-spacing:1.5px;text-transform:uppercase;}
+
+  .wrap{max-width:640px;margin:0 auto;padding:24px 18px 60px;}
+
+  .intro{margin:14px 4px 22px;}
+  .intro h2{font-size:21px;font-weight:700;color:var(--carbon);margin-bottom:6px;}
+  .intro p{font-size:14px;color:var(--gris);}
+
+  .buscador{
+    background:var(--blanco);
+    border:1px solid var(--linea);
+    border-radius:14px;
+    padding:18px;
+    box-shadow:0 1px 3px rgba(59,69,79,.06);
+  }
+  .buscador label{display:block;font-size:13px;font-weight:600;color:var(--carbon);margin-bottom:8px;}
+  .fila{display:flex;gap:10px;}
+  .fila input{
+    flex:1;
+    font-size:18px;
+    padding:13px 14px;
+    border:1.5px solid var(--linea);
+    border-radius:10px;
+    color:var(--texto);
+    outline:none;
+    transition:border-color .15s;
+    -webkit-appearance:none;
+  }
+  .fila input:focus{border-color:var(--dorado);}
+  .fila button{
+    background:var(--dorado);
+    color:var(--carbon);
+    font-weight:700;font-size:15px;
+    border:none;border-radius:10px;
+    padding:0 22px;
+    cursor:pointer;
+    transition:background .15s;
+    white-space:nowrap;
+  }
+  .fila button:hover{background:#ad862533;background:#b58c28;}
+  .fila button:active{transform:translateY(1px);}
+
+  .estado-carga{text-align:center;color:var(--gris);font-size:14px;padding:30px 0;}
+
+  .resultados{margin-top:22px;}
+  .res-titulo{font-size:13px;font-weight:600;color:var(--gris);text-transform:uppercase;letter-spacing:.8px;margin:0 4px 12px;}
+
+  .card{
+    background:var(--blanco);
+    border:1px solid var(--linea);
+    border-left:5px solid var(--dorado);
+    border-radius:12px;
+    padding:16px 18px;
+    margin-bottom:14px;
+    box-shadow:0 1px 3px rgba(59,69,79,.05);
+  }
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
+  .coche{font-size:13px;color:var(--gris);font-weight:600;}
+  .coche b{color:var(--carbon);font-size:15px;}
+  .pill{
+    font-size:12px;font-weight:700;
+    padding:5px 12px;border-radius:999px;
+    white-space:nowrap;text-transform:uppercase;letter-spacing:.4px;
+  }
+  .pill.recibido{background:var(--recibido-bg);color:var(--recibido-fg);}
+  .pill.proceso{background:var(--proceso-bg);color:var(--proceso-fg);}
+  .pill.resuelto{background:var(--resuelto-bg);color:var(--resuelto-fg);}
+
+  .campo{margin-top:10px;}
+  .campo .k{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--gris);font-weight:600;margin-bottom:2px;}
+  .campo .v{font-size:14.5px;color:var(--texto);}
+  .campo .v.coment{background:var(--fondo);border-radius:8px;padding:9px 11px;border:1px solid var(--linea);}
+  .campo .v.vacio{color:var(--gris);font-style:italic;}
+
+  .vacio-msg{
+    text-align:center;padding:34px 20px;
+    background:var(--blanco);border:1px dashed var(--linea);border-radius:12px;
+    color:var(--gris);
+  }
+  .vacio-msg b{color:var(--carbon);display:block;margin-bottom:4px;font-size:15px;}
+
+  .pie{text-align:center;font-size:12px;color:var(--gris);margin-top:30px;}
+
+  @media(max-width:480px){
+    .fila{flex-direction:column;}
+    .fila button{padding:13px;}
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="logo-mark">C</div>
+    <div>
+      <span>Transportes Córdoba</span>
+      <h1>Estado de reportes del taller</h1>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="intro">
+      <h2>Consultá tu reporte</h2>
+      <p>Ingresá el número de interno para ver el estado de las fallas que reportaste.</p>
+    </div>
+
+    <div class="buscador">
+      <label for="coche">Número de interno</label>
+      <div class="fila">
+        <input id="coche" type="text" inputmode="numeric" placeholder="Ej: 142" autocomplete="off">
+        <button id="btnBuscar">Buscar</button>
+      </div>
+    </div>
+
+    <div id="salida" class="resultados"></div>
+
+    <p class="pie">Si reportaste una falla y no aparece, avisá al taller.</p>
+  </div>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN — pegá acá la URL de tu Google Sheet publicada.
+   Instrucciones para obtenerla:
+   1. En tu Google Sheet, andá a Archivo > Compartir > Publicar en la web.
+   2. Elegí la hoja de reportes y formato "Valores separados por comas (.csv)".
+   3. Tocá Publicar y copiá el link que te da.
+   4. Pegá ese link entre las comillas de abajo, reemplazando el texto.
+   El orden de columnas esperado es: Coche, Falla, Fecha, Estado, Comentario del taller.
+   ============================================================ */
+const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRHlpQa8gVgp8XVr_PhkKzYYK8bYbkCKdWcKjTxH1TiR5crh94sH6v30SQZDtROPMzI2RuKN_ug1rOV/pub?gid=1239582017&single=true&output=csv";
+
+const salida = document.getElementById("salida");
+const input = document.getElementById("coche");
+const btn = document.getElementById("btnBuscar");
+
+let datos = [];      // se llena al cargar
+let cargado = false;
+
+function parseCSV(texto){
+  // parser simple que respeta comillas
+  const filas = [];
+  let fila = [], campo = "", dentro = false;
+  for(let i=0;i<texto.length;i++){
+    const c = texto[i];
+    if(dentro){
+      if(c === '"'){
+        if(texto[i+1] === '"'){campo+='"';i++;}
+        else dentro=false;
+      } else campo+=c;
+    } else {
+      if(c === '"') dentro=true;
+      else if(c === ',') {fila.push(campo);campo="";}
+      else if(c === '\n'){fila.push(campo);filas.push(fila);fila=[];campo="";}
+      else if(c === '\r'){}
+      else campo+=c;
+    }
+  }
+  if(campo.length || fila.length){fila.push(campo);filas.push(fila);}
+  return filas;
+}
+
+async function cargarDatos(){
+  if(URL_CSV.startsWith("PEGAR")){
+    return null; // todavía no configurada
+  }
+  const resp = await fetch(URL_CSV);
+  const texto = await resp.text();
+  const filas = parseCSV(texto).filter(f => f.some(c => c.trim() !== ""));
+  if(filas.length < 2) return [];
+  // saltea encabezado (fila 0)
+  // Orden de columnas en la planilla:
+  // 0 Marca temporal | 1 Nombre | 2 FECHA | 3 NUMERO DE INTERNO |
+  // 4 INFORME PROBLEMA | 5 Estado | 6 Comentario del taller
+  return filas.slice(1).map(f => ({
+    coche: (f[3]||"").trim(),
+    falla: (f[4]||"").trim(),
+    fecha: (f[2]||"").trim(),
+    estado: (f[5]||"").trim(),
+    comentario: (f[6]||"").trim()
+  }));
+}
+
+function claseEstado(estado){
+  const e = estado.toLowerCase();
+  if(e.includes("resuel") || e.includes("listo") || e.includes("termin")) return "resuelto";
+  if(e.includes("proceso") || e.includes("repar") || e.includes("curso")) return "proceso";
+  return "recibido";
+}
+
+function escapar(s){
+  return (s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function tarjeta(r){
+  const cls = claseEstado(r.estado);
+  const coment = r.comentario
+    ? `<div class="v coment">${escapar(r.comentario)}</div>`
+    : `<div class="v vacio">Sin comentarios todavía</div>`;
+  return `
+    <div class="card">
+      <div class="card-top">
+        <div class="coche">Interno <b>${escapar(r.coche)}</b></div>
+        <div class="pill ${cls}">${escapar(r.estado || "Recibido")}</div>
+      </div>
+      <div class="campo"><div class="k">Falla reportada</div><div class="v">${escapar(r.falla)}</div></div>
+      <div class="campo"><div class="k">Fecha</div><div class="v">${escapar(r.fecha)}</div></div>
+      <div class="campo"><div class="k">Comentario del taller</div>${coment}</div>
+    </div>`;
+}
+
+async function buscar(){
+  const q = input.value.trim();
+  if(!q){
+    salida.innerHTML = `<div class="vacio-msg"><b>Ingresá un número de interno</b>Escribí el número arriba y tocá Buscar.</div>`;
+    return;
+  }
+
+  if(!cargado){
+    salida.innerHTML = `<div class="estado-carga">Buscando…</div>`;
+    try{
+      const d = await cargarDatos();
+      if(d === null){
+        salida.innerHTML = `<div class="vacio-msg"><b>Falta configurar la página</b>Todavía no se conectó la planilla de reportes. Avisá al área de sistemas.</div>`;
+        return;
+      }
+      datos = d;
+      cargado = true;
+    }catch(err){
+      salida.innerHTML = `<div class="vacio-msg"><b>No se pudieron cargar los reportes</b>Revisá la conexión e intentá de nuevo en un momento.</div>`;
+      return;
+    }
+  }
+
+  const encontrados = datos.filter(r => r.coche.toLowerCase() === q.toLowerCase());
+
+  if(encontrados.length === 0){
+    salida.innerHTML = `<div class="vacio-msg"><b>No hay reportes para el interno ${escapar(q)}</b>Verificá el número. Si reportaste una falla recién, puede tardar unos minutos en aparecer.</div>`;
+    return;
+  }
+
+  // más recientes primero (si la fecha es comparable, igual mantiene orden de planilla invertido)
+  const lista = encontrados.slice().reverse();
+  const titulo = `<div class="res-titulo">${lista.length} reporte${lista.length>1?"s":""} para el interno ${escapar(q)}</div>`;
+  salida.innerHTML = titulo + lista.map(tarjeta).join("");
+}
+
+btn.addEventListener("click", buscar);
+input.addEventListener("keydown", e => { if(e.key === "Enter") buscar(); });
+</script>
+</body>
+</html>
